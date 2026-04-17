@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Proof of Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg:#F0F2F5;--surface:#FFFFFF;--surface2:#E8ECF0;--border:#B0BAC5;
+  --navy:#1A2B3C;--blue:#1565C0;--blue-dim:#E3EEF9;
+  --green:#1B7A3E;--green-dim:#E6F4EC;--green-bg:#C8E6D4;
+  --amber:#B45000;--amber-dim:#FFF3E0;
+  --red:#C62828;--red-dim:#FFEBEE;--red-bg:#FFCDD2;
+  --orange:#F5620F;--orange-dim:rgba(245,98,15,0.10);
+  --text:#0D1B2A;--text2:#374A5C;--text3:#6B7C8D;
+  --r:8px;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --shadow:0 2px 8px rgba(0,0,0,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;min-height:100vh;line-height:1.5}
+
+/* Header */
+.header{background:var(--navy);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.logo{width:36px;height:36px;background:var(--orange);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.htitle{font-family:var(--mono);font-size:14px;color:#CBD5E0;margin-left:12px}
+.htitle span{color:#FFFFFF;font-weight:600}
+.hright{display:flex;align-items:center;gap:10px}
+.hbadge{font-family:var(--mono);font-size:11px;color:#90A4B4;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:4px 10px;border-radius:4px}
+
+/* Main */
+.main{max-width:800px;margin:0 auto;padding:32px 20px 100px}
+.fhdr{margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid var(--border)}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--orange-dim);border:1.5px solid rgba(245,98,15,0.3);color:var(--orange);font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;padding:5px 12px;border-radius:3px;text-transform:uppercase;margin-bottom:14px}
+.fhdr h1{font-size:26px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:-.3px}
+.fhdr p{color:var(--text3);font-size:14px;line-height:1.6}
+
+/* Section */
+.section{margin-bottom:28px}
+.slabel{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.slabel::after{content:'';flex:1;height:2px;background:var(--border)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.flabel{font-size:13px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:5px}
+.req{color:var(--orange);font-size:16px;line-height:1;margin-left:1px}
+input,select,textarea{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:15px;padding:10px 14px;width:100%;outline:none;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-dim)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--surface)}
+textarea{resize:vertical;min-height:80px}
+
+/* Line items */
+.items-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.items-hdr{display:grid;grid-template-columns:1fr 80px 110px 36px;background:var(--navy);padding:0}
+.ih{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:11px 14px;border-right:1px solid rgba(255,255,255,0.12)}
+.ih:last-child{border-right:none}
+.item-row{display:grid;grid-template-columns:1fr 80px 110px 36px;border-bottom:2px solid var(--border);align-items:center}
+.item-row:last-child{border-bottom:none}
+.item-row:nth-child(even){background:var(--surface2)}
+.ic{padding:8px 14px;border-right:2px solid var(--border);font-size:15px}
+.ic:last-child{border-right:none}
+.item-row input{border:none;border-radius:0;background:transparent;padding:8px 14px;font-size:15px;border-bottom:none}
+.item-row input:focus{background:var(--blue-dim);box-shadow:none;border-color:transparent}
+.item-row select{border:none;border-radius:0;background:transparent;padding:8px 10px;font-size:13px}
+.item-row select:focus{background:var(--blue-dim);box-shadow:none}
+.rmv-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;width:100%;height:40px;transition:color .15s;display:flex;align-items:center;justify-content:center}
+.rmv-btn:hover{color:var(--red)}
+.add-item-btn{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;border:none;border-top:2px solid var(--border);background:var(--surface2);color:var(--blue);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s}
+.add-item-btn:hover{background:var(--blue-dim)}
+
+/* Condition badge in select */
+.cond-good{color:var(--green)}
+.cond-dmg{color:var(--red)}
+
+/* Damage section */
+.dmg-toggle-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:2px solid var(--border);border-radius:var(--r);cursor:pointer;margin-bottom:12px}
+.toggle{position:relative;width:48px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.tslider{position:absolute;inset:0;background:var(--border);border-radius:13px;cursor:pointer;transition:background .2s}
+.tslider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.toggle input:checked+.tslider{background:var(--red)}
+.toggle input:checked+.tslider::before{transform:translateX(22px)}
+.toggle-label{font-size:16px;font-weight:600;color:var(--text);user-select:none}
+.dmg-box{background:var(--red-dim);border:2px solid var(--red);border-radius:var(--r);padding:16px;display:none}
+
+/* Signature */
+.sig-wrap{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);overflow:hidden}
+.sig-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:2px solid var(--border);background:var(--surface2)}
+.sig-label{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.sig-clear{font-size:13px;font-weight:600;color:var(--red);background:none;border:none;cursor:pointer;padding:4px 10px;border-radius:4px;transition:background .15s}
+.sig-clear:hover{background:var(--red-dim)}
+canvas#sigCanvas{display:block;width:100%;height:160px;cursor:crosshair;touch-action:none;background:#fff}
+
+/* Photos */
+.photo-cat{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
+.photo-cat-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:2px solid var(--border)}
+.photo-cat-title{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:8px}
+.photo-cat-count{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text3);background:var(--surface2);padding:3px 10px;border-radius:4px}
+.photo-cat-count.has{color:var(--green);background:var(--green-dim)}
+.photo-cat-body{padding:14px 16px}
+.photo-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:2px dashed var(--border);border-radius:var(--r);background:transparent;color:var(--text2);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.photo-btn:hover,.photo-btn:active{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:500px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
+.p-thumb{position:relative;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:var(--surface2);border:2px solid var(--border)}
+.p-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.p-del{position:absolute;top:4px;right:4px;width:26px;height:26px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.p-del:hover{background:var(--red)}
+
+/* Progress */
+.prog{display:none;align-items:center;gap:12px;color:var(--text2);font-size:15px;margin-top:16px;padding:16px;background:var(--surface);border-radius:var(--r);border:2px solid var(--border)}
+.prog.vis{display:flex}
+.pbar{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.pfill{height:100%;background:var(--orange);border-radius:4px;transition:width .3s ease;width:0%}
+
+/* Buttons */
+.actions{display:flex;gap:12px;margin-top:28px;padding-top:24px;border-top:2px solid var(--border)}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 24px;border-radius:var(--r);font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--orange);color:#fff;flex:1;box-shadow:0 3px 8px rgba(245,98,15,0.35)}
+.btn-primary:hover{background:#C94D08}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--surface2);color:var(--text2);border:2px solid var(--border)}
+.btn-secondary:hover{border-color:var(--text3)}
+
+/* Success */
+.success-screen{display:none;text-align:center;padding:60px 20px}
+.success-screen.vis{display:block}
+.form-wrap.hidden{display:none}
+.s-icon{width:80px;height:80px;background:var(--green-dim);border:3px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px}
+.success-screen h2{font-size:24px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.success-screen p{color:var(--text2);font-size:16px;margin-bottom:16px;line-height:1.6}
+.pod-ref{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--orange);background:var(--orange-dim);border:2px solid rgba(245,98,15,0.3);padding:12px 24px;border-radius:var(--r);display:inline-block;margin:12px 0 24px}
+.next-steps{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:20px;max-width:480px;margin:0 auto 28px;text-align:left}
+.next-steps h3{font-size:13px;font-weight:700;color:var(--text3);margin-bottom:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.step{display:flex;gap:12px;margin-bottom:10px;font-size:14px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{width:22px;height:22px;background:var(--orange-dim);border:1.5px solid rgba(245,98,15,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--orange);flex-shrink:0;margin-top:1px}
+.step-txt{color:var(--text2);line-height:1.5}
+
+/* Toast */
+.toasts{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:8px;min-width:300px}
+.toast{background:var(--navy);color:#fff;border-radius:var(--r);padding:14px 18px;font-size:15px;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center">
+    <div class="logo"></div>
+    <div class="htitle" style="margin-left:12px"><span>ERTHOS</span> — Proof of Delivery</div>
+  </div>
+  <div class="hright">
+    <div class="hbadge" id="podRef">POD-——</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Success -->
+  <div class="success-screen" id="ss">
+    <div class="s-icon">✓</div>
+    <h2>POD generated successfully</h2>
+    <p>Your Proof of Delivery document has been downloaded. Send it to the procurement team to complete receiving in Business Central.</p>
+    <div class="pod-ref" id="ssRef"></div>
+    <div class="next-steps">
+      <h3>Next steps</h3>
+      <div class="step"><div class="step-num">1</div><div class="step-txt">Locate the downloaded PDF on your device.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-txt">Email it to the procurement shared inbox for Business Central receiving.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-txt">Keep a copy for your site records.</div></div>
+    </div>
+    <button class="btn btn-primary" style="max-width:280px;margin:0 auto" onclick="reset()">Create another POD</button>
+  </div>
+
+  <!-- Form -->
+  <div class="form-wrap" id="fw">
+    <div class="fhdr">
+      <div class="badge">▸ Proof of Delivery</div>
+      <h1>Proof of Delivery</h1>
+      <p>Complete this form to document a material delivery. A signed PDF will be generated for submission to the procurement team.</p>
+    </div>
+
+    <!-- Delivery details -->
+    <div class="section">
+      <div class="slabel">Delivery details</div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="field">
+          <label class="flabel">Vendor / Supplier <span class="req">*</span></label>
+          <input type="text" id="fVendor" placeholder="Company delivering the goods"/>
+        </div>
+        <div class="field">
+          <label class="flabel">Delivery date <span class="req">*</span></label>
+          <input type="date" id="fDate"/>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="field">
+          <label class="flabel">PO Number <span class="req">*</span></label>
+          <input type="text" id="fPO" placeholder="Purchase order number"/>
+        </div>
+        <div class="field">
+          <label class="flabel">BOL / Packing Slip #</label>
+          <input type="text" id="fBOL" placeholder="Bill of lading or packing slip number"/>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="field">
+          <label class="flabel">Site / Location <span class="req">*</span></label>
+          <input type="text" id="fSite" placeholder="Delivery site name or address"/>
+        </div>
+        <div class="field">
+          <label class="flabel">Received by <span class="req">*</span></label>
+          <input type="text" id="fReceiver" placeholder="Your full name"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div class="section">
+      <div class="slabel">Items received</div>
+      <div class="items-card">
+        <div class="items-hdr">
+          <div class="ih">Description</div>
+          <div class="ih" style="text-align:center">Qty</div>
+          <div class="ih" style="text-align:center">Condition</div>
+          <div class="ih"></div>
+        </div>
+        <div id="itemsBody"></div>
+        <button type="button" class="add-item-btn" onclick="addItem()">
+          + Add line item
+        </button>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-top:8px">
+        Add one row per item or item group. Description is free-form — include item numbers if available.
+      </div>
+    </div>
+
+    <!-- Damage -->
+    <div class="section">
+      <div class="slabel">Damage assessment</div>
+      <div class="dmg-toggle-row" onclick="document.getElementById('dmgToggle').click()">
+        <label class="toggle" onclick="event.stopPropagation()">
+          <input type="checkbox" id="dmgToggle" onchange="dmgChange()"/>
+          <span class="tslider"></span>
+        </label>
+        <span class="toggle-label">Damage or discrepancy was observed</span>
+      </div>
+      <div class="dmg-box" id="dmgBox">
+        <div class="field">
+          <label class="flabel" style="color:var(--red)">Describe the damage or discrepancy <span class="req">*</span></label>
+          <textarea id="fDmgNotes" placeholder="Describe affected items, nature of damage, quantity discrepancy, etc." rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="section">
+      <div class="slabel">Delivery photos</div>
+      <input type="file" id="pi_packing" accept="image/*" capture="environment" style="display:none" onchange="handleCapture(event,'packing')"/>
+      <input type="file" id="pi_cargo"   accept="image/*" capture="environment" style="display:none" onchange="handleCapture(event,'cargo')"/>
+      <input type="file" id="pi_damage"  accept="image/*" capture="environment" style="display:none" onchange="handleCapture(event,'damage')"/>
+
+      <div class="photo-cat">
+        <div class="photo-cat-hdr">
+          <div class="photo-cat-title">📋 Packing Slip</div>
+          <div class="photo-cat-count" id="cnt_packing">0 photos</div>
+        </div>
+        <div class="photo-cat-body">
+          <button type="button" class="photo-btn" onclick="document.getElementById('pi_packing').click()">📷 Add packing slip photo</button>
+          <div class="photo-grid" id="grid_packing"></div>
+        </div>
+      </div>
+
+      <div class="photo-cat">
+        <div class="photo-cat-hdr">
+          <div class="photo-cat-title">📦 Cargo</div>
+          <div class="photo-cat-count" id="cnt_cargo">0 photos</div>
+        </div>
+        <div class="photo-cat-body">
+          <button type="button" class="photo-btn" onclick="document.getElementById('pi_cargo').click()">📷 Add cargo photo</button>
+          <div class="photo-grid" id="grid_cargo"></div>
+        </div>
+      </div>
+
+      <div class="photo-cat" id="dmgPhotoSection" style="display:none">
+        <div class="photo-cat-hdr">
+          <div class="photo-cat-title" style="color:var(--red)">⚠ Damage Photos</div>
+          <div class="photo-cat-count" id="cnt_damage">0 photos</div>
+        </div>
+        <div class="photo-cat-body">
+          <button type="button" class="photo-btn" onclick="document.getElementById('pi_damage').click()">📷 Add damage photo</button>
+          <div class="photo-grid" id="grid_damage"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signature -->
+    <div class="section">
+      <div class="slabel">Signature <span style="color:var(--orange);font-size:16px;margin-left:2px">*</span></div>
+      <div class="sig-wrap">
+        <div class="sig-toolbar">
+          <span class="sig-label">Sign below</span>
+          <button type="button" class="sig-clear" onclick="clearSig()">Clear</button>
+        </div>
+        <canvas id="sigCanvas" width="760" height="160"></canvas>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px">Sign with your finger or stylus to confirm receipt.</div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section">
+      <div class="slabel">Notes</div>
+      <textarea id="fNotes" placeholder="Any additional notes about this delivery..." rows="3"></textarea>
+    </div>
+
+    <div class="prog" id="prog">
+      <span id="progLbl" style="white-space:nowrap;font-size:14px">Generating PDF...</span>
+      <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+      <button class="btn btn-primary" id="subBtn" onclick="submitPOD()">Generate & Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<script src="bravo_pod_form_v1.js"></script>
+</body>
+</html>
