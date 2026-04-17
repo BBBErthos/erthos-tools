@@ -179,7 +179,6 @@ function validate() {
   const errs = [];
   if (!document.getElementById("fVendor").value.trim())   errs.push("Vendor name is required");
   if (!document.getElementById("fDate").value)            errs.push("Delivery date is required");
-  if (!document.getElementById("fPO").value.trim())       errs.push("PO Number is required");
   if (!document.getElementById("fSite").value.trim())     errs.push("Site / Location is required");
   if (!document.getElementById("fReceiver").value.trim()) errs.push("Received by is required");
   if (getLineItems().length === 0)                        errs.push("Enter at least one line item");
