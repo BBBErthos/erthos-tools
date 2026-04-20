@@ -400,7 +400,7 @@ function showSuccess(ref) {
   document.getElementById("fw").classList.add("hidden");
   document.getElementById("ss").classList.add("vis");
   document.getElementById("ssRef").textContent = ref;
-  toast("PDF downloaded — ready to email to procurement", "success");
+  toast("PDF downloaded — ready to email to procurement@erthos.com", "success");
 }
 
 // ── Reset / Clear ─────────────────────────────────────────────────────────────
